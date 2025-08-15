@@ -1,0 +1,10 @@
+{
+    "ANSIBLE_MODULE_ARGS": {
+        "endpoint": "http://localhost:5041/",
+        "username": "user",
+        "password": "password",
+        "character": "B",
+        "number": 4,
+        "action": "set"
+    }
+}

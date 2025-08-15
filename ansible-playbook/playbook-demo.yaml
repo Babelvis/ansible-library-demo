@@ -1,0 +1,12 @@
+- name: test my new module
+  hosts: localhost
+  tasks:
+    - name: run the new module
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: set
+        character: 'B'
+        number: 5
+      register: testout
+

@@ -1,0 +1,6 @@
+venv/**
+api-dotnet-src/.idea/**
+api-dotnet-src/bin/**
+api-dotnet-src/obj/**
+*.user
+*.http
