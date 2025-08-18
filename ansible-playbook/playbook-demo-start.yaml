@@ -1,0 +1,98 @@
+- name: test my new module
+  hosts: localhost
+  tasks:
+    - name: Clear all the characters (there can be old stuff)
+      api_demo_start:
+        endpoint: dummy
+        token: dummy
+        action: clear
+
+    - name: Added the character B with value 5
+      api_demo_start:
+        endpoint: dummy
+        token: dummy
+        action: set
+        character: 'B'
+        number: 5
+
+    - name: Get the character A
+      api_demo_start:
+        endpoint: dummy
+        token: dummy
+        action: get
+        character: 'A'
+
+    - name: Get the character A with username and token
+      api_demo_start:
+        endpoint: dummy
+        token: dummy
+        username: dummy
+        password: password
+        action: get
+        character: 'A'
+      register: test_create
+      ignore_errors: true # username and token together will give an error
+    
+    - name: token and username are mutually exclusive
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"mutually exclusive" not in test_create.msg'
+
+    - name: Get the character A without password but with username
+      api_demo_start:
+        endpoint: dummy
+        username: dummy
+        action: get
+        character: 'A'
+      register: test_create
+      ignore_errors: true # username and password are required together
+    
+    - name: username and password are required together
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"required together" not in test_create.msg'
+
+    - name: Dummy action
+      api_demo_start:
+        endpoint: dummy
+        token: dummy
+        action: dummy
+        character: 'A'
+      register: test_create
+      ignore_errors: true # dummy is not a valid action
+
+    - name: dummy is not a valid action
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"must be one of" not in test_create.msg'
+
+    - name: Username and token not present
+      api_demo_start:
+        endpoint: dummy
+        action: set
+        character: 'A'
+      register: test_create
+      ignore_errors: true # username or token must be present
+
+    - name: dummy is not a valid action
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"one of the following is required" not in test_create.msg'
+
+    - name: There must be an endpoint
+      api_demo_start:
+        token: dummy
+        action: get
+        character: 'A'
+      register: test_create
+      ignore_errors: true # endpoint must be present
+
+    - name: dummy is not a valid action
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"missing required arguments" not in test_create.msg'

@@ -40,6 +40,7 @@ app.MapGet("/character", [Authorize]() =>
 
 app.MapGet("/character/{id}", [Authorize](string id) =>
 {
+    InputChecker.CheckCharacter(id);
     if (list.TryGetValue(id, out var number))
         return Task.FromResult(number);
     throw new KeyNotFoundException($"Character with id {id} not found");
@@ -47,6 +48,8 @@ app.MapGet("/character/{id}", [Authorize](string id) =>
 
 app.MapPost("/character/{id}", [Authorize](int number, string id) =>
 {
+    InputChecker.CheckCharacter(id);
+    InputChecker.CheckNumber(number);
     if (list.TryGetValue(id, out var currentNumber))
     {
         if (!list.TryUpdate(id, number, currentNumber))
@@ -64,6 +67,8 @@ app.MapPost("/character/{id}", [Authorize](int number, string id) =>
 
 app.MapPut("/character/{id}", [Authorize](int number, string id) =>
 {
+    InputChecker.CheckCharacter(id);
+    InputChecker.CheckNumber(number);
     if (!list.TryAdd(id, number))
     {
         throw new KeyNotFoundException($"Character with id {id} already exists");
@@ -73,6 +78,7 @@ app.MapPut("/character/{id}", [Authorize](int number, string id) =>
 
 app.MapDelete("/character/{id}", [Authorize](string id) =>
 {
+    InputChecker.CheckCharacter(id);
     if (!list.TryRemove(id, out _))
     {
         throw new KeyNotFoundException($"Character with id {id} not found");

@@ -1,0 +1,7 @@
+.idea/**
+bin/**
+obj/**
+*.Development.*
+*.user
+Dockerfile
+Properties/**

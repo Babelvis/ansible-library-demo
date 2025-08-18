@@ -1,12 +1,178 @@
 - name: test my new module
   hosts: localhost
   tasks:
-    - name: run the new module
+
+    - name: Get the character A with username and token
+      api_demo_start:
+        endpoint: dummy
+        token: dummy
+        username: dummy
+        password: password
+        action: get
+        character: 'A'
+      register: test_create
+      ignore_errors: true # username and token together will give an error
+    
+    - name: token and username are mutually exclusive
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"mutually exclusive" not in test_create.msg'
+
+    - name: Get the character A without password but with username
+      api_demo_start:
+        endpoint: dummy
+        username: dummy
+        action: get
+        character: 'A'
+      register: test_create
+      ignore_errors: true # username and password are required together
+    
+    - name: username and password are required together
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"required together" not in test_create.msg'
+
+    - name: Dummy action
+      api_demo_start:
+        endpoint: dummy
+        token: dummy
+        action: dummy
+        character: 'A'
+      register: test_create
+      ignore_errors: true # dummy is not a valid action
+
+    - name: dummy is not a valid action
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"must be one of" not in test_create.msg'
+
+    - name: Username and token not present
+      api_demo_start:
+        endpoint: dummy
+        action: set
+        character: 'A'
+      register: test_create
+      ignore_errors: true # username or token must be present
+
+    - name: dummy is not a valid action
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"one of the following is required" not in test_create.msg'
+
+    - name: There must be an endpoint
+      api_demo_start:
+        token: dummy
+        action: get
+        character: 'A'
+      register: test_create
+      ignore_errors: true # endpoint must be present
+
+    - name: dummy is not a valid action
+      fail:
+        msg: "The output is not correct"
+      when:
+        - '"missing required arguments" not in test_create.msg'
+
+    - name: Clear all the characters (there can be old stuff)
+      api_demo:
+        endpoint: http://localhost:5041/
+        username: user
+        password: password
+        action: clear
+
+    - name: Clear all the characters (no changes)
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: clear
+      register: test_create
+
+    - name: 2nd clear must be without a change
+      fail:
+        msg: "The output is not correct"
+      when:
+        - test_create.changed
+
+    - name: Added the character B with value 5
       api_demo:
         endpoint: http://localhost:5041/
         token: secret
         action: set
         character: 'B'
         number: 5
-      register: testout
+      register: test_create
 
+    - name: Check Added the character B with value 5 output
+      fail:
+        msg: "The output is not correct"
+      when:
+        - not test_create.exists
+        - not test_create.changed
+        - not test_create.number == 5
+
+    - name: Changed the character B with value 5 to the same value (no change)
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: set
+        character: 'B'
+        number: 5
+      register: test_create
+
+    - name: Check Changed the character B with value 5 output (no change)
+      fail:
+        msg: "The output is not correct"
+      when:
+        - not test_create.exists
+        - test_create.changed
+        - not test_create.number == 5
+
+    - name: Added the character A with value 1
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: set
+        character: 'A'
+        number: 1
+      register: test_create
+
+    - name: Check Added the character A with value 1 output
+      fail:
+        msg: "The output is not correct"
+      when:
+        - not test_create.exists
+        - not test_create.changed
+        - not test_create.number == 1
+
+    - name: Get the character A
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: get
+        character: 'A'
+      register: test_create
+
+    - name: Check Get the character A output
+      fail:
+        msg: "The output is not correct"
+      when:
+        - not test_create.exists
+        - test_create.changed
+        - not test_create.number == 1
+
+    - name: Clear all the characters
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: clear
+      register: test_create
+
+    - name: last clear must be with a change (A and B are in the list)
+      fail:
+        msg: "The output is not correct"
+      when:
+        - not test_create.changed

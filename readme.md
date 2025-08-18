@@ -4,7 +4,17 @@ A small demonstration to show how you can deploy a web application on a Windows 
 
 Bas Magré <bas.magre@babelvis.nl>
 
+## Build and publish demo api
+
+```bash
+docker build . -t opvolger/demo-api-ansible
+docker push opvolger/demo-api-ansible
+docker run -p 5041:8080  opvolger/demo-api-ansible
+```
+
 ## Developer Setup
+
+If you want to use python environments, you can do it
 
 ```bash
 # setup of the virtual environment (only onetime)
@@ -15,7 +25,7 @@ source venv/bin/activate
 pip install ansible-core requests
 ```
 
-## Debug modules
+### Debug modules
 
 In vscode create file `.vscode/launch.json`
 
@@ -53,7 +63,7 @@ and create `tests/arguments.json`
 }
 ```
 
-## Generate Docs
+### Generate/Test Docs
 
 ```bash
 # test doc generation
