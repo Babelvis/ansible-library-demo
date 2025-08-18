@@ -12,7 +12,22 @@ docker push opvolger/demo-api-ansible
 docker run -p 5041:8080  opvolger/demo-api-ansible
 ```
 
+## Storyline
+
+We need to build a module in ansible that can set/get a charachter with a number and clear all charachters that are set in different environments.
+
+So we need:
+
+- the arguments charachter and number
+- 3 actions in the module: set, get and clear
+- to login with username/password OR use a token direct
+- an endpoint because where are multible environments with different endpoints.
+
 ## Developer Setup
+
+Normally I do use a virtual environment, but since I only use standard modules/application that are already installed on my machine, I skip this now
+
+### Python virtual environment
 
 If you want to use python environments, you can do it
 
@@ -41,6 +56,16 @@ In vscode create file `.vscode/launch.json`
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/ansible-playbook/library/api_demo.py",
+            "console": "integratedTerminal",
+            "args": [
+                "${workspaceFolder}/tests/arguments.json"
+            ]
+        },
+        {
+            "name": "Python Debugger: api_demo_start.py with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/ansible-playbook/library/api_demo_start.py",
             "console": "integratedTerminal",
             "args": [
                 "${workspaceFolder}/tests/arguments.json"
@@ -76,8 +101,9 @@ ANSIBLE_LIBRARY=./library ansible-doc -t module api_demo
 ```bash
 cd ansible-playbook
 # with ansible
-ANSIBLE_LIBRARY=./library ansible -m api_demo -a 'endpoint=https://127.0.0.1:5000/api/v1/ token=12345 action=clear' localhost
+ANSIBLE_LIBRARY=./library ansible -m api_demo -a 'endpoint=http://127.0.0.1:5041/ token=secret action=clear' localhost
 # with ansible-playbook
+ansible-playbook playbook-demo-start.yaml -vvv
 ansible-playbook playbook-demo.yaml -vvv
 ```
 
