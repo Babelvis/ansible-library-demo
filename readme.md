@@ -7,8 +7,11 @@ Bas Magré <bas.magre@babelvis.nl>
 ## Build and publish demo api
 
 ```bash
+# build the docker image (already done)
 docker build . -t opvolger/demo-api-ansible
+# push the docker image to docker hub (already done)
 docker push opvolger/demo-api-ansible
+# run the docker container (needed)
 docker run -p 5041:8080  opvolger/demo-api-ansible
 ```
 
