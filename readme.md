@@ -6,7 +6,10 @@ Bas Magré <bas.magre@babelvis.nl>
 
 ## Build and publish demo api
 
+There is a demo api in the folder `api-dotnet-src` we only need the run the docker container. But the source code is here if you want to see it.
+
 ```bash
+cd api-dotnet-src
 # build the docker image (already done)
 docker build . -t opvolger/demo-api-ansible
 # push the docker image to docker hub (already done)
@@ -29,6 +32,8 @@ So we need:
 ## Developer Setup
 
 Normally I do use a virtual environment, but since I only use standard modules/application that are already installed on my machine, I skip this now
+
+There are 2 ansible modules `api_demo_start.py` and `api_demo.py`. The `api_demo_start.py` is a first setup with only the arguments and description of the module. The `api_demo.py` has the full interaction with the docker container.
 
 ### Python virtual environment
 

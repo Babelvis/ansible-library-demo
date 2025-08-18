@@ -273,12 +273,12 @@ def run_module():
             currentNumber = demoApi.get(character)
             if currentNumber != number:
                 result['changed'] = True
-                # if the user is working with this module in only check mode we do not want to make any changes to the environment, just return the current state with no modifications
+                # if the user is working with this module in only check mode we do not want to make any changes to the environment.
                 if not module.check_mode:
                     demoApi.update(character, number)
         else:
             result['changed'] = True
-            # if the user is working with this module in only check mode we do not want to make any changes to the environment, just return the current state with no modifications
+            # if the user is working with this module in only check mode we do not want to make any changes to the environment.
             if not module.check_mode:
                 demoApi.set(character, number)
         result['number'] = number
@@ -286,7 +286,7 @@ def run_module():
     elif action == 'clear':
         characterList = demoApi.list()
         for characterClear in characterList:
-            # if the user is working with this module in only check mode we do not want to make any changes to the environment, just return the current state with no modifications
+            # if the user is working with this module in only check mode we do not want to make any changes to the environment.
             if not module.check_mode:
                 demoApi.reset(characterClear)
             result['changed'] = True
