@@ -4,3 +4,4 @@ api-dotnet-src/bin/**
 api-dotnet-src/obj/**
 *.user
 *.http
+.ansible/.lock

@@ -1,33 +1,36 @@
 # Ansible library demo
 
-A small demonstration to show how you can deploy a web application on a Windows Server using Ansible.
+A small demonstration to show how you make a simple Ansible Module.
 
 Bas Magré <bas.magre@babelvis.nl>
 
-## Build and publish demo api
+## Storyline
+
+We have a simple api that can get, set, change and delete a key-value pair. The key must be a letter and the value a number. The api needs authentication with username and password or a token. See `Run demo api` for the complite definition.
+In ansible we need to build a module that can set/get a charachter with a number and clear all charachters. This is what we need in the playbooks.
+
+So we need:
+
+- the arguments charachter and number (key and value)
+- 3 actions in the module: set, get and clear
+- authentication with username/password OR the use of a token
+- an endpoint where the API can be accessed.
+
+## Run demo api
 
 There is a demo api in the folder `api-dotnet-src` we only need the run the docker container. But the source code is here if you want to see it.
 
 ```bash
 cd api-dotnet-src
 # build the docker image (already done)
-docker build . -t opvolger/demo-api-ansible
-# push the docker image to docker hub (already done)
-docker push opvolger/demo-api-ansible
-# run the docker container (needed)
+# docker build . -t opvolger/demo-api-ansible
+# push the docker image to docker hub (already done, only I can do this)
+# docker push opvolger/demo-api-ansible
+# run the docker container (you only need to do this)
 docker run -p 5041:8080  opvolger/demo-api-ansible
 ```
 
-## Storyline
-
-We need to build a module in ansible that can set/get a charachter with a number and clear all charachters that are set in different environments.
-
-So we need:
-
-- the arguments charachter and number
-- 3 actions in the module: set, get and clear
-- to login with username/password OR use a token direct
-- an endpoint because where are multible environments with different endpoints.
+Now you can visit the swagger interface of the demo api: [http://localhost:5041/swagger](http://localhost:5041/swagger)
 
 ## Developer Setup
 
