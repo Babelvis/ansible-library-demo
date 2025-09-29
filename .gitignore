@@ -5,3 +5,4 @@ api-dotnet-src/obj/**
 *.user
 *.http
 .ansible/.lock
+*.pyc
