@@ -1,4 +1,4 @@
-- name: test my new module
+- name: Test my new module
   hosts: localhost
   tasks:
 
@@ -12,14 +12,14 @@
         character: 'A'
       register: test_create
       ignore_errors: true # username and token together will give an error
-    
-    - name: token and username are mutually exclusive
-      fail:
+
+    - name: Token and username are mutually exclusive
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - '"mutually exclusive" not in test_create.msg'
 
-    - name: Get the character A without password but with username
+    - name: Get the character 'A' without password but with username
       api_demo_start:
         endpoint: dummy
         username: dummy
@@ -27,9 +27,9 @@
         character: 'A'
       register: test_create
       ignore_errors: true # username and password are required together
-    
-    - name: username and password are required together
-      fail:
+
+    - name: Username and password are required together
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - '"required together" not in test_create.msg'
@@ -43,8 +43,8 @@
       register: test_create
       ignore_errors: true # dummy is not a valid action
 
-    - name: dummy is not a valid action
-      fail:
+    - name: Dummy is not a valid action
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - '"must be one of" not in test_create.msg'
@@ -57,8 +57,8 @@
       register: test_create
       ignore_errors: true # username or token must be present
 
-    - name: dummy is not a valid action
-      fail:
+    - name: Username or token must be present
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - '"one of the following is required" not in test_create.msg'
@@ -71,8 +71,8 @@
       register: test_create
       ignore_errors: true # endpoint must be present
 
-    - name: dummy is not a valid action
-      fail:
+    - name: Endpoint must be present
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - '"missing required arguments" not in test_create.msg'
@@ -92,7 +92,7 @@
       register: test_create
 
     - name: 2nd clear must be without a change
-      fail:
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - test_create.changed
@@ -107,7 +107,7 @@
       register: test_create
 
     - name: Check Added the character B with value 5 output
-      fail:
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - not test_create.exists
@@ -124,7 +124,7 @@
       register: test_create
 
     - name: Check Changed the character B with value 5 output (no change)
-      fail:
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - not test_create.exists
@@ -141,7 +141,7 @@
       register: test_create
 
     - name: Check Added the character A with value 1 output
-      fail:
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - not test_create.exists
@@ -157,7 +157,7 @@
       register: test_create
 
     - name: Check Get the character A output
-      fail:
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - not test_create.exists
@@ -171,8 +171,8 @@
         action: clear
       register: test_create
 
-    - name: last clear must be with a change (A and B are in the list)
-      fail:
+    - name: Last clear must be with a change (A and B are in the list)
+      ansible.builtin.fail:
         msg: "The output is not correct"
       when:
         - not test_create.changed
