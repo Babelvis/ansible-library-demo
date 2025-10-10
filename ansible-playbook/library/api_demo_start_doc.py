@@ -11,7 +11,6 @@
 # - https://github.com/ansible-collections/community.general/tree/main/plugins/modules
 # - https://docs.ansible.com/ansible/latest/collections_guide/collections_installing.html
 
-import re
 from ansible.module_utils.basic import AnsibleModule
 
 DOCUMENTATION = r'''
@@ -114,35 +113,12 @@ def run_module():
         action=dict(type='str', required=True, choices=['get', 'set', 'clear'])
     )
 
-    # use username with password
-    check_required_together = [
-        ('username', 'password')
-    ]
-
-    # use username/password or token is needed
-    check_required_one_of = [ ('username', 'token')]
-
-    # use username/password or token, only one
-    check_mutually_exclusive = [ ('username', 'token')]
-
-    # if action == get, we need the character argument
-    # if action == set, we need the character and number arguments
-    check_required_if = [
-         ('action', 'get', ['character']),
-         ('action', 'set', ['character','number'])
-    ]
-
     # the AnsibleModule object will be our abstraction working with Ansible
     # this includes instantiation, a couple of common attr would be the
     # args/params passed to the execution, as well as if the module
     # supports check mode
     module = AnsibleModule(
         argument_spec=module_args,
-        supports_check_mode=True,
-        required_if=check_required_if,
-        required_together=check_required_together,
-        required_one_of=check_required_one_of,
-        mutually_exclusive=check_mutually_exclusive
     )
 
     # seed the result dict in the object
@@ -156,28 +132,6 @@ def run_module():
         stdout=None,
         stderr=None
     )
-
-    character = module.params['character']
-    number = module.params['number']
-    action = module.params['action']
-
-    # input checks
-    if character != None and not (re.fullmatch(r"[A-Z]", character)):
-        module.fail_json(msg=f'character: "{character}" must be an alpha letter and in upper case', **result)
-    if number != None and not (1 <= number <= 255):
-        module.fail_json(msg='number must be between 1 and 255', **result)
-
-    # actions
-    if action == 'get':
-        result['number'] = 4
-        result['exists'] = True
-    elif action == 'set':
-        result['changed'] = True
-        result['number'] = number
-        result['exists'] = True
-    elif action == 'clear':
-        result['changed'] = True
-        result['exists'] = False
 
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)

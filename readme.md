@@ -4,17 +4,9 @@ A small demonstration to show how you make a simple Ansible Module.
 
 Bas Magré <bas.magre@babelvis.nl>
 
-## Storyline
+If you have a custom API within your organization that needs to communicate with your Ansible automation, you can solve this in several ways. Perhaps a few curl commands in bash lines with `ansible.builtin.shell`. It's not pretty, but you could create a task with inputs. A better approach would be to create a module. It sounds complicated, but it's actually quite manageable if you have a little Python knowledge.
 
-We have a simple api that can get, set, change and delete a key-value pair. The key must be a letter and the value a number. The api needs authentication with username and password or a token. See `Run demo api` for the complite definition.
-In ansible we need to build a module that can set/get a charachter with a number and clear all charachters. This is what we need in the playbooks.
-
-So we need:
-
-- the arguments charachter and number (key and value)
-- 3 actions in the module: set, get and clear
-- authentication with username/password OR the use of a token
-- an endpoint where the API can be accessed.
+For this example, we have a simple API that we need to call from Ansible. The power of Ansible is that it only makes changes when necessary (immutable). So, you need to take this into account in your module. Compare existing values ​​with what (possibly) needs to be changed.
 
 ## Run demo api
 
@@ -22,23 +14,277 @@ There is a demo api in the folder `api-dotnet-src` we only need the run the dock
 
 ```bash
 cd api-dotnet-src
-# build the docker image (already done)
+# # build the docker image (already done)
 # docker build . -t opvolger/demo-api-ansible
-# push the docker image to docker hub (already done, only I can do this)
+# # push the docker image to docker hub (already done, only I can do this)
 # docker push opvolger/demo-api-ansible
-# run the docker container (you only need to do this)
+# # run the docker container (you only need to do this)
 docker run -p 5041:8080  opvolger/demo-api-ansible
 ```
 
 Now you can visit the swagger interface of the demo api: [http://localhost:5041/swagger](http://localhost:5041/swagger)
 
+It's a key-value store, with the key always being a single uppercase letter and the value being a number.
+
+This API allows you to retrieve, modify, or add a current value.
+
+## Create the module
+
+An Ansible module must be written in Python (for Linux). This should be placed under your playbook folder in the "library" folder. You can find more information on the [ansible website](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html).
+
+### figure out what your input variables should be
+
+We have a simple api that can get, set, change and delete a key-value pair. The key must be a letter and the value a number. The api needs authentication with username and password or a token. See [Run demo api](#-Run-demo-api) for the complete definition.
+In ansible we need to build a module that can set/get a character-key/number-value and clear all characters. This is what we need in the playbooks.
+
+So we need:
+
+- the arguments character and number (key and value)
+- 3 actions in the module: set, get and clear
+- authentication with username/password OR the use of a token
+- the endpoint where we can call the API.
+
+Something like this:
+
+```yaml
+- name: Set number on a character with username and password
+  api_demo:
+    endpoint: http://localhost:5041/
+    username: user
+    password: password
+    character: "A"
+    number: 4
+    action: set
+  delegate_to: localhost
+```
+
+### Start with the documentation
+
+If you know how to call the module. We can start with the documentation and empty implementation.
+
+We use the class AnsibleModule for communication back to ansible and set the variable `DOCUMENTATION`, `EXAMPLES` and `RETURN`.
+
+Here is my implementation of it:
+
+```python
+#!/usr/bin/python
+from ansible.module_utils.basic import AnsibleModule
+
+DOCUMENTATION = r'''
+---
+module: api_demo
+author:
+    - Bas Magré (@opvolger)
+short_description: The ability to create, remove and manage a list of characters that have numbers
+version_added: 0.0.1
+description: "The ability to create, remove and manage a list of characters that have numbers. This is just a demo!"
+
+options:
+    endpoint:
+        description: The uri of the api
+        type: str
+        required: true
+        sample: 'http://localhost:5041/'
+    username:
+        description: Username to get a token
+        type: str
+        required: false
+        sample: 'user'
+    password:
+        description: Password to get a token
+        type: str
+        required: false
+        sample: 'password'
+    token:
+        description: Use a token direct (without username/password)
+        type: str
+        required: false
+        sample: 'secret'
+    character:
+        description: Character (key)
+        type: str
+        required: false
+        sample: 'A'
+    number:
+        description: Number (value)
+        type: int
+        required: false
+        sample: 5
+    action:
+        description: The action to perform
+        type: str
+        required: true
+        default: get
+        choices: [ get, set, clear ]
+        sample: 'set'
+'''
+
+EXAMPLES = r'''
+- name: Clear all set character and numbers with a token
+  api_demo:
+    endpoint: http://localhost:5041/
+    token: secret
+    action: clear
+  delegate_to: localhost
+
+- name: Set number on a character with username and password
+  api_demo:
+    endpoint: http://localhost:5041/
+    username: user
+    password: password
+    character: "A"
+    number: 4
+    action: set
+  delegate_to: localhost
+
+- name: Get number from set character with a token
+  api_demo:
+    endpoint: http://localhost:5041/
+    token: secret
+    character: "A"
+    action: get
+  delegate_to: localhost
+'''
+
+RETURN = r'''
+exists:
+    description: if the character is set
+    returned: success
+    type: bool
+    sample: True
+number:
+    description: The number that is set or get
+    type: int
+    sample: 5
+'''
+
+def run_module():
+    # define the available arguments/parameters that a user can pass to the module
+    module_args = dict(
+        endpoint=dict(type='str', required=True),
+        username=dict(type='str', required=False),
+        password=dict(type='str', required=False, no_log=True),
+        token=dict(type='str', required=False, no_log=True),
+        character=dict(type='str', required=False),
+        number=dict(type='int', required=False),
+        action=dict(type='str', required=True, choices=['get', 'set', 'clear'])
+    )
+
+    # the AnsibleModule object will be our abstraction working with Ansible
+    # this includes instantiation, a couple of common attr would be the
+    # args/params passed to the execution, as well as if the module
+    # supports check mode
+    module = AnsibleModule(
+        argument_spec=module_args,
+    )
+
+    # seed the result dict in the object
+    # we primarily care about changed and state
+    # change is if this module effectively modified the target
+    # state will include any data that you want your module to pass back
+    # for consumption, for example, in a subsequent task
+    result = dict(
+        changed=False,
+        rc=1,
+        stdout=None,
+        stderr=None
+    )
+
+    result['rc'] = 0  # we are at the end, no errors occurred
+    module.exit_json(**result)
+
+def main():
+    run_module()
+
+if __name__ == '__main__':
+    main()
+
+```
+
+We can now test if the documentation is correct with the commands.
+
+```bash
+# test doc generation
+cd ansible-playbook
+ANSIBLE_LIBRARY=./library ansible-doc -t module api_demo_start_doc
+```
+
+This should not give an error, but should display your module's documentation.
+
+You can even debug this module, see: [Developer Setup](#-Developer-Setup)
+
+### Continue with arguments
+
+Our module can work with a username/password or a token. There are more arguments that should or shouldn't be used in combination.
+
+- if we use an username we need a password
+- we need or username(/password) or token
+- we can't user username(/password) and token together
+- if we use the get command we need a character
+- if we use the set command we need a character and number
+
+We can implement this in the module like this:
+
+```python
+    # use username with password
+    check_required_together = [
+        ('username', 'password')
+    ]
+
+    # use username/password or token is needed
+    check_required_one_of = [ ('username', 'token')]
+
+    # use username/password or token, only one
+    check_mutually_exclusive = [ ('username', 'token')]
+
+    # if action == get, we need the character argument
+    # if action == set, we need the character and number arguments
+    check_required_if = [
+         ('action', 'get', ['character']),
+         ('action', 'set', ['character','number'])
+    ]
+
+    # the AnsibleModule object will be our abstraction working with Ansible
+    # this includes instantiation, a couple of common attr would be the
+    # args/params passed to the execution, as well as if the module
+    # supports check mode
+    module = AnsibleModule(
+        argument_spec=module_args,
+        supports_check_mode=True,
+        required_if=check_required_if,
+        required_together=check_required_together,
+        required_one_of=check_required_one_of,
+        mutually_exclusive=check_mutually_exclusive
+    )
+```
+
+You can put the arrays direct in constructor of AnsibleModule, but I like the comments on my variable approach. The module now looks like [this](ansible-playbook/library/api_demo_start.py).
+
+For more information see [ansible docs](https://docs.ansible.com/ansible/latest/reference_appendices/module_utils.html)
+
+You can debug this module, see: [Developer Setup](#-Developer-Setup)
+
+### Make a class for the interaction
+
+To maintain a clear overview and simplify development, you can encapsulate the entire interaction within a class. The advantage of a separate class is that you can essentially reuse this code outside of the Ansible module. Ideally, you could create a separate module for this and maintain it as a [Python packages](https://packaging.python.org/en/latest/tutorials/packaging-projects/) (provided you can/are allowed to make this code public).
+
+For this example, I will eventually include the class in my Ansible module. But it could also have been an import, of course.
+
+```python
+
+```
+
 ## Developer Setup
 
-Normally I do use a virtual environment, but since I only use standard modules/application that are already installed on my machine, I skip this now
+There are multiple ansible modules `api_demo_start_doc.py`, `api_demo_start.py` and `api_demo.py`.
 
-There are 2 ansible modules `api_demo_start.py` and `api_demo.py`. The `api_demo_start.py` is a first setup with only the arguments and description of the module. The `api_demo.py` has the full interaction with the docker container.
+- `api_demo_start_doc.py`: only documentation
+- `api_demo_start.py`: with arguments checks
+- `api_demo.py`: has the full implementation
 
 ### Python virtual environment
+
+Normally I do use a [virtual environment](https://docs.python.org/3/library/venv.html), but since I only use standard modules/application that are already installed on my machine, I skip this for now.
 
 If you want to use python environments, you can do it
 
@@ -47,13 +293,15 @@ If you want to use python environments, you can do it
 python -m venv venv
 # use the venv
 source venv/bin/activate
-# install required python libs (only onetime)
-pip install ansible-core requests
+# install required python libs (only onetime), ansible-dev-tools is needed only for the Ansible extension in vscode
+pip install ansible-core requests ansible-dev-tools
 ```
 
-### Debug modules
+### Debug modules in vscode
 
-In vscode create file `.vscode/launch.json`
+In vscode, install the extension `Ansible` from `Red hat`. This can help you a lot.
+
+For debugging the modules in vscode create file `.vscode/launch.json`. Here you can specify launch options.
 
 ```json
 {
@@ -63,20 +311,10 @@ In vscode create file `.vscode/launch.json`
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: api_demo.py with Arguments",
+            "name": "Python Debugger: Ansible Module with Arguments",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/ansible-playbook/library/api_demo.py",
-            "console": "integratedTerminal",
-            "args": [
-                "${workspaceFolder}/tests/arguments.json"
-            ]
-        },
-        {
-            "name": "Python Debugger: api_demo_start.py with Arguments",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/ansible-playbook/library/api_demo_start.py",
+            "program": "${file}",
             "console": "integratedTerminal",
             "args": [
                 "${workspaceFolder}/tests/arguments.json"
@@ -86,7 +324,7 @@ In vscode create file `.vscode/launch.json`
 }
 ```
 
-and create `tests/arguments.json`
+For the arguments create `tests/arguments.json`. Here you can set the arguments you want to pass to the module you are creating.
 
 ```json
 {
@@ -99,7 +337,13 @@ and create `tests/arguments.json`
 }
 ```
 
-### Generate/Test Docs
+Now you can hit `F5` if you have opened a module file and debug it with breakpoints.
+
+### Ansible commands
+
+You can use multiple command to test you module, here are some that i use to test the module.
+
+## Generate/Test Docs
 
 ```bash
 # test doc generation
@@ -116,7 +360,13 @@ ANSIBLE_LIBRARY=./library ansible -m api_demo -a 'endpoint=http://127.0.0.1:5041
 # with ansible-playbook
 ansible-playbook playbook-demo-start.yaml -vvv
 ansible-playbook playbook-demo.yaml -vvv
+# the dry run (check), this will fail with our tests. But no values will change on the (api)server
+ansible-playbook playbook-demo.yaml --check -vvv
 ```
+
+### Make it greater
+
+You can make a collection with this module. Create test in the collection itself and use the collection in playbooks. More information can be found on the [ansible docs](https://docs.ansible.com/ansible/latest/collections_guide/index.html).
 
 ## License
 

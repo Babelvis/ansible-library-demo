@@ -1,21 +1,14 @@
 {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: api_demo.py with Arguments",
+            "name": "Python Debugger: Ansible Module with Arguments",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/ansible-playbook/library/api_demo.py",
-            "console": "integratedTerminal",
-            "args": [
-                "${workspaceFolder}/tests/arguments.json"
-            ]
-        },
-        {
-            "name": "Python Debugger: api_demo_start.py with Arguments",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/ansible-playbook/library/api_demo_start.py",
+            "program": "${file}",
             "console": "integratedTerminal",
             "args": [
                 "${workspaceFolder}/tests/arguments.json"

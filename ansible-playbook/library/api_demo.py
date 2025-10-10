@@ -88,7 +88,7 @@ class DemoApi:
         response.raise_for_status()
         return json.loads(response.text)
 
-    def list(self) -> List[int]:
+    def list(self) -> List[str]:
         """
         Get the list of characters that are set
 
@@ -217,18 +217,6 @@ def run_module():
          ('action', 'set', ['character','number'])
     ]
 
-    # seed the result dict in the object
-    # we primarily care about changed and state
-    # change is if this module effectively modified the target
-    # state will include any data that you want your module to pass back
-    # for consumption, for example, in a subsequent task
-    result = dict(
-        changed=False,
-        rc=1,
-        stdout=None,
-        stderr=None
-    )
-
     # the AnsibleModule object will be our abstraction working with Ansible
     # this includes instantiation, a couple of common attr would be the
     # args/params passed to the execution, as well as if the module
@@ -240,6 +228,18 @@ def run_module():
         required_together=check_required_together,
         required_one_of=check_required_one_of,
         mutually_exclusive=check_mutually_exclusive
+    )
+
+    # seed the result dict in the object
+    # we primarily care about changed and state
+    # change is if this module effectively modified the target
+    # state will include any data that you want your module to pass back
+    # for consumption, for example, in a subsequent task
+    result = dict(
+        changed=False,
+        rc=1,
+        stdout=None,
+        stderr=None
     )
 
     endpoint = module.params['endpoint']
@@ -292,7 +292,7 @@ def run_module():
             result['changed'] = True
             result['exists'] = False
 
-    result['rc'] = 0  # We are on the end, no errors
+    result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
 def main():
