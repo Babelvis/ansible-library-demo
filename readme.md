@@ -4,13 +4,13 @@ A small demonstration to show how you make a simple Ansible Module.
 
 Bas Magré <bas.magre@babelvis.nl>
 
-If you have a custom API within your organization that needs to communicate with your Ansible automation, you can solve this in several ways. Perhaps a few curl commands in bash lines with `ansible.builtin.shell`. It's not pretty, but you could create a task with inputs. A better approach would be to create a module. It sounds complicated, but it's actually quite manageable if you have a little Python knowledge.
+If you have Ansible automation within your organization that needs to communicate with a custom API, you can solve this in several ways. Perhaps a few curl commands in bash lines with `ansible.builtin.shell`. It's not pretty, but you could create a task with inputs. A better approach would be to create a module. It sounds complicated, but it's actually quite manageable if you have a little Python knowledge.
 
-For this example, we have a simple API that we need to call from Ansible. The power of Ansible is that it only makes changes when necessary (immutable). So, you need to take this into account in your module. Compare existing values ​​with what (possibly) needs to be changed.
+For this example, we have a simple API that we need to call from Ansible. The power of Ansible is that it only makes changes when necessary (idempotent). So, you need to take this into account in your module. Compare existing values ​​with what (possibly) needs to be changed.
 
 ## Run demo api
 
-There is a demo api in the folder `api-dotnet-src` we only need the run the docker container. But the source code is here if you want to see it.
+There is a demo api in the folder `api-dotnet-src` we only need to run the docker container. But the source code is here if you want to see it.
 
 ```bash
 cd api-dotnet-src
@@ -22,7 +22,7 @@ cd api-dotnet-src
 docker run -p 5041:8080  opvolger/demo-api-ansible
 ```
 
-Now you can visit the swagger interface of the demo api: [http://localhost:5041/swagger](http://localhost:5041/swagger)
+You now can visit the swagger interface of the demo api: [http://localhost:5041/swagger](http://localhost:5041/swagger)
 
 It's a key-value store, with the key always being a single uppercase letter and the value being a number.
 
@@ -32,9 +32,9 @@ This API allows you to retrieve, modify, or add a current value.
 
 An Ansible module must be written in Python (for Linux). This should be placed under your playbook folder in the "library" folder. You can find more information on the [ansible website](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html).
 
-### figure out what your input variables should be
+### Figure out what your input variables should be
 
-We have a simple api that can get, set, change and delete a key-value pair. The key must be a letter and the value a number. The api needs authentication with username and password or a token. See [Run demo api](#-Run-demo-api) for the complete definition.
+We have a simple api that can get, set, change and delete a key-value pair. The key must be a letter and the value a number. The api needs authentication with username and password or with a token. See [Run demo api](#-Run-demo-api) for the complete definition.
 In ansible we need to build a module that can set/get a character-key/number-value and clear all characters. This is what we need in the playbooks.
 
 So we need:
@@ -201,7 +201,7 @@ if __name__ == '__main__':
 
 ```
 
-We can now test if the documentation is correct with the commands.
+Now we can test if the documentation is correct with the commands.
 
 ```bash
 # test doc generation
@@ -215,11 +215,11 @@ You can even debug this module, see: [Developer Setup](#-Developer-Setup)
 
 ### Continue with arguments
 
-Our module can work with a username/password or a token. There are more arguments that should or shouldn't be used in combination.
+Our module can work with an username/password or with a token. There are more arguments that should or shouldn't be used in combination.
 
 - if we use an username we need a password
-- we need or username(/password) or token
-- we can't user username(/password) and token together
+- we need or username/password or token
+- we can't user username/password and token together
 - if we use the get command we need a character
 - if we use the set command we need a character and number
 
@@ -258,7 +258,7 @@ We can implement this in the module like this [api_demo_start.py](ansible-playbo
     )
 ```
 
-You can put the arrays direct in constructor of AnsibleModule, but I like the comments on my variable approach. The module now looks like [this](ansible-playbook/library/api_demo_start.py).
+You can put the arrays directly in the constructor of AnsibleModule, but I like to make comments on my variable. The module now looks like [this](ansible-playbook/library/api_demo_start.py).
 
 For more information see [ansible docs](https://docs.ansible.com/ansible/latest/reference_appendices/module_utils.html)
 
@@ -412,7 +412,7 @@ python -m unittest discover -v -p 'test_*.py'
 
 ### Combine it all in one Ansible Module
 
-Now we can copy the module in the Ansible module and make the logic for the module.
+Now we can copy the class in the Ansible module and connect them together.
 
 You can use the module to ask if the user is in [check mode](https://docs.ansible.com/ansible/2.8/user_guide/playbooks_checkmode.html). That is in the property `module.check_mode`. if that is true, do not make changes or don't support it (supports_check_mode=False) in the initialization of the AnsibleModule.
 
@@ -712,6 +712,35 @@ if __name__ == '__main__':
     main()
 ```
 
+## Ansible Playbook
+
+Now we have our module, we can make a playbook
+
+```yaml
+- name: Test my new module
+  hosts: localhost
+  tasks:
+    - name: Clear all the characters
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: clear
+
+    - name: Added the character A with value 1
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: set
+        character: 'A'
+        number: 1
+```
+
+Our work is done.
+
+I you want more examples/tests see [playbook-demo.yaml](ansible-playbook/playbook-demo.yaml). If you open this file in VSCode with the extension Ansible you can see that the Ansible linter will see a lot of the new module just created.
+
+![image](ansible-lint.png)
+
 ## Developer Setup
 
 There are multiple ansible modules:
@@ -764,7 +793,7 @@ For debugging the modules in vscode create file `.vscode/launch.json`. Here you 
 }
 ```
 
-For the arguments create `tests/arguments.json`. Here you can set the arguments you want to pass to the module you are creating.
+For the arguments create `tests/arguments.json`. Here you can set the arguments you want to pass to the module you are creating. You create more scenarios in different arguments-json files.
 
 ```json
 {
