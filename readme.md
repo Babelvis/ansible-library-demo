@@ -30,7 +30,7 @@ This API allows you to retrieve, modify, or add a current value.
 
 ## Create the module
 
-An Ansible module must be written in Python (for Linux). This should be placed under your playbook folder in the "library" folder. You can find more information on the [ansible website](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html).
+An Ansible module must be written in Python (for Linux). This should be placed under your playbook folder in the "library" folder. You can find more information on the [ansible docs](https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html).
 
 ### Figure out what your input variables should be
 
