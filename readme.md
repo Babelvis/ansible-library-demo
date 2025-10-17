@@ -62,7 +62,7 @@ Something like this:
 
 If you know how to call the module. We can start with the documentation and empty implementation.
 
-We use the class AnsibleModule for communication back to ansible and set the variable `DOCUMENTATION`, `EXAMPLES` and `RETURN`.
+We use the class AnsibleModule for communication back to Ansible and set the variable `DOCUMENTATION`, `EXAMPLES` and `RETURN`.
 
 Here is my implementation of [api_demo_start_doc.py](ansible-playbook/library/api_demo_start_doc.py):
 
