@@ -24,7 +24,7 @@ description: "The ability to create, remove and manage a list of characters that
 
 options:
     endpoint:
-        description: The uri of the api
+        description: The uri of the API
         type: str
         required: true
         sample: 'http://localhost:5041/'

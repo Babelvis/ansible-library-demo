@@ -5,12 +5,12 @@ from urllib.parse import urljoin
 
 class DemoApi:
     """
-    A simple demo class where the api logic is written
+    A simple demo class where the API logic is written
 
-    :param username: user that connect to api
+    :param username: user that connect to API
     :param password: password from the user
     :param token: token can be user instead of username/password
-    :param uri: the endpoint of the api
+    :param uri: the endpoint of the API
     :raises HTTPError: if one occurred
     """
     def __init__(self, username: str, password: str, token: str, uri: str):

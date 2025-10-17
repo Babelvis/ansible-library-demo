@@ -20,12 +20,12 @@ from typing import List
 
 class DemoApi:
     """
-    A simple demo class where the api logic is written
+    A simple demo class where the API logic is written
 
-    :param username: user that connect to api
+    :param username: user that connect to API
     :param password: password from the user
     :param token: token can be user instead of username/password
-    :param uri: the endpoint of the api
+    :param uri: the endpoint of the API
     :raises HTTPError: if one occurred
     """
     def __init__(self, username: str, password: str, token: str, uri: str):
@@ -110,7 +110,7 @@ description: "The ability to create, remove and manage a list of characters that
 
 options:
     endpoint:
-        description: The uri of the api
+        description: The uri of the API
         type: str
         required: true
         sample: 'http://localhost:5041/'
@@ -260,7 +260,7 @@ def run_module():
 
     # actions
     if action == 'get':
-        # only get from api that is in the list
+        # only get from API that is in the list
         characterList = demoApi.list()
         if (character in characterList):
             result['number'] = demoApi.get(character)

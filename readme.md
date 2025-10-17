@@ -8,9 +8,9 @@ If you have Ansible automation within your organization that needs to communicat
 
 For this example, we have a simple API that we need to call from Ansible. The power of Ansible is that it only makes changes when necessary (idempotent). So, you need to take this into account in your module. Compare existing values ​​with what (possibly) needs to be changed.
 
-## Run demo api
+## Run demo API
 
-There is a demo api in the folder `api-dotnet-src` we only need to run the docker container. But the source code is here if you want to see it.
+There is a demo API in the folder `api-dotnet-src` we only need to run the docker container. But the source code is here if you want to see it.
 
 ```bash
 cd api-dotnet-src
@@ -22,7 +22,7 @@ cd api-dotnet-src
 docker run -p 5041:8080  opvolger/demo-api-ansible
 ```
 
-You now can visit the swagger interface of the demo api: [http://localhost:5041/swagger](http://localhost:5041/swagger)
+You now can visit the swagger interface of the demo API: [http://localhost:5041/swagger](http://localhost:5041/swagger)
 
 It's a key-value store, with the key always being a single uppercase letter and the value being a number.
 
@@ -34,7 +34,7 @@ An Ansible module must be written in Python (for Linux). This should be placed u
 
 ### Figure out what your input variables should be
 
-We have a simple api that can get, set, change and delete a key-value pair. The key must be a letter and the value a number. The api needs authentication with username and password or with a token. See [Run demo api](#-Run-demo-api) for the complete definition.
+We have a simple API that can get, set, change and delete a key-value pair. The key must be a letter and the value a number. The API needs authentication with username and password or with a token. See [Run demo API](#-Run-demo-API) for the complete definition.
 In ansible we need to build a module that can set/get a character-key/number-value and clear all characters. This is what we need in the playbooks.
 
 So we need:
@@ -81,7 +81,7 @@ description: "The ability to create, remove and manage a list of characters that
 
 options:
     endpoint:
-        description: The uri of the api
+        description: The uri of the API
         type: str
         required: true
         sample: 'http://localhost:5041/'
@@ -280,12 +280,12 @@ from urllib.parse import urljoin
 
 class DemoApi:
     """
-    A simple demo class where the api logic is written
+    A simple demo class where the API logic is written
 
-    :param username: user that connect to api
+    :param username: user that connect to API
     :param password: password from the user
     :param token: token can be user instead of username/password
-    :param uri: the endpoint of the api
+    :param uri: the endpoint of the API
     :raises HTTPError: if one occurred
     """
     def __init__(self, username: str, password: str, token: str, uri: str):
@@ -430,12 +430,12 @@ from typing import List
 
 class DemoApi:
     """
-    A simple demo class where the api logic is written
+    A simple demo class where the API logic is written
 
-    :param username: user that connect to api
+    :param username: user that connect to API
     :param password: password from the user
     :param token: token can be user instead of username/password
-    :param uri: the endpoint of the api
+    :param uri: the endpoint of the API
     :raises HTTPError: if one occurred
     """
     def __init__(self, username: str, password: str, token: str, uri: str):
@@ -520,7 +520,7 @@ description: "The ability to create, remove and manage a list of characters that
 
 options:
     endpoint:
-        description: The uri of the api
+        description: The uri of the API
         type: str
         required: true
         sample: 'http://localhost:5041/'
@@ -670,7 +670,7 @@ def run_module():
 
     # actions
     if action == 'get':
-        # only get from api that is in the list
+        # only get from API that is in the list
         characterList = demoApi.list()
         if (character in characterList):
             result['number'] = demoApi.get(character)
