@@ -35,7 +35,7 @@ An Ansible module must be written in Python (for Linux). This should be placed u
 ### Figure out what your input variables should be
 
 We have a simple API that can get, set, change and delete a key-value pair. The key must be a letter and the value a number. The API needs authentication with username and password or with a token. See [Run demo API](#-Run-demo-API) for the complete definition.
-In ansible we need to build a module that can set/get a character-key/number-value and clear all characters. This is what we need in the playbooks.
+In Ansible we need to build a module that can set/get a character-key/number-value and clear all characters. This is what we need in the playbooks.
 
 So we need:
 
@@ -743,7 +743,7 @@ I you want more examples/tests see [playbook-demo.yaml](ansible-playbook/playboo
 
 ## Developer Setup
 
-There are multiple ansible modules:
+There are multiple Ansible modules:
 
 - [api_demo_start_doc.py](ansible-playbook/library/api_demo_start_doc.py): only documentation
 - [api_demo_start.py](ansible-playbook/library/api_demo_start.py): with arguments checks
