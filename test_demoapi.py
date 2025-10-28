@@ -1,39 +1,45 @@
+"""Test module for DemoApi."""
+
 import unittest
 from demoapi import DemoApi
 
-class Test_Api(unittest.TestCase):
+class TestApi(unittest.TestCase):
+    """Test Class"""
 
     def setUp(self):
-        self.demoApi = DemoApi('user', 'password', None, 'http://localhost:5041/')
+        self.demo_api = DemoApi('user', 'password', None, 'http://localhost:5041/')
         # clear all characters (if any)
-        characters = self.demoApi.list()
+        characters = self.demo_api.list()
         for character in characters:
-            self.demoApi.reset(character)
-    
-    # yes i know, only test 1 thing every test...
-    def test_username(self):
-        characters = self.demoApi.list()
+            self.demo_api.reset(character)
+
+    def test_username(self) -> None:
+        """Test module with username/password
+
+        yes i know, only test 1 thing every test...
+        """
+        characters = self.demo_api.list()
         for character in characters:
-            self.demoApi.reset(character)
+            self.demo_api.reset(character)
         # set A and B
-        self.demoApi.set('A', 5)
-        self.demoApi.set('B', 7)
+        self.demo_api.set('A', 5)
+        self.demo_api.set('B', 7)
         # check value of A
-        check = self.demoApi.get('A')
+        check = self.demo_api.get('A')
         assert check == 5
         # check list
-        check = self.demoApi.list()
+        check = self.demo_api.list()
         assert len(check) == 2
         assert 'A' in check
         assert 'B' in check
 
-    # test token
-    def test_token(self):
-        self.demoApi = DemoApi(None, None, 'secret', 'http://localhost:5041/')
+    def test_token(self) -> None:
+        """Test module with token."""
+        self.demo_api = DemoApi(None, None, 'secret', 'http://localhost:5041/')
         # set A and B
-        self.demoApi.set('A', 5)
+        self.demo_api.set('A', 5)
         # check value of A
-        check = self.demoApi.get('A')
+        check = self.demo_api.get('A')
         assert check == 5
 
 if __name__ == '__main_':

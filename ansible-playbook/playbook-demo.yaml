@@ -131,6 +131,26 @@
         - test_create.changed
         - not test_create.number == 5
 
+    - name: Changed the character B to value 7(change)
+      api_demo:
+        endpoint: http://localhost:5041/
+        token: secret
+        action: set
+        character: 'B'
+        number: 7
+      register: test_create
+
+    - name: Check Changed the character B has changed
+      ansible.builtin.fail:
+        msg: "The output is not correct"
+      when:
+        - not test_create.exists
+        - not test_create.changed
+        - not test_create.diff['character'].number == 'B'
+        - not test_create.diff['character'].number == 'B'
+        - not test_create.diff['before'].number == 5
+        - not test_create.diff['after'].number == 7
+
     - name: Added the character A with value 1
       api_demo:
         endpoint: http://localhost:5041/

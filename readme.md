@@ -68,6 +68,9 @@ Here is my implementation of [api_demo_start_doc.py](ansible-playbook/library/ap
 
 ```python
 #!/usr/bin/python
+
+"""Ansible module that has only documentation."""
+
 from ansible.module_utils.basic import AnsibleModule
 
 DOCUMENTATION = r'''
@@ -158,17 +161,19 @@ number:
     sample: 5
 '''
 
-def run_module():
+def run_module() -> None:
+    """The Ansible module."""
+
     # define the available arguments/parameters that a user can pass to the module
-    module_args = dict(
-        endpoint=dict(type='str', required=True),
-        username=dict(type='str', required=False),
-        password=dict(type='str', required=False, no_log=True),
-        token=dict(type='str', required=False, no_log=True),
-        character=dict(type='str', required=False),
-        number=dict(type='int', required=False),
-        action=dict(type='str', required=True, choices=['get', 'set', 'clear'])
-    )
+    module_args = {
+        'endpoint': {'type': 'str', 'required': True},
+        'username': {'type': 'str', 'required': False},
+        'password': {'type': 'str', 'required': False, 'no_log': True},
+        'token': {'type': 'str', 'required': False, 'no_log': True},
+        'character': {'type': 'str', 'required': False},
+        'number': {'type': 'int', 'required': False},
+        'action': {'type': 'str', 'required': True, 'choices': ['get', 'set', 'clear']}
+    }
 
     # the AnsibleModule object will be our abstraction working with Ansible
     # this includes instantiation, a couple of common attr would be the
@@ -183,22 +188,22 @@ def run_module():
     # change is if this module effectively modified the target
     # state will include any data that you want your module to pass back
     # for consumption, for example, in a subsequent task
-    result = dict(
-        changed=False,
-        rc=1,
-        stdout=None,
-        stderr=None
-    )
+    result = {
+        'changed': False,
+        'rc': 1,
+        'stdout': None,
+        'stderr': None
+    }
 
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
-def main():
+def main() -> None:
+    """Main function to run Ansible Module."""
     run_module()
 
 if __name__ == '__main__':
     main()
-
 ```
 
 Now we can test if the documentation is correct with the commands.
@@ -273,10 +278,12 @@ For this example, I will eventually include the class in my Ansible module. But 
 The module [demoapi.py](demoapi.py):
 
 ```python
-import json
-import requests
+"""Module providing calls to the demo api."""
+
 from typing import List
 from urllib.parse import urljoin
+import json
+import requests
 
 class DemoApi:
     """
@@ -307,7 +314,7 @@ class DemoApi:
 
         :param character: character to reset
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.delete(urljoin(self.uri,f"character/{character}"))
         response.raise_for_status()
 
@@ -319,7 +326,7 @@ class DemoApi:
         :param number: the number that will be given to the character
 
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.put(urljoin(self.uri,f"character/{character}?number={number}"))
         response.raise_for_status()
 
@@ -331,7 +338,7 @@ class DemoApi:
         :param number: the number that will be given to the character
 
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.post(urljoin(self.uri,f"character/{character}?number={number}"))
         response.raise_for_status()
 
@@ -343,7 +350,7 @@ class DemoApi:
 
         :returns: the number that will be given to the character
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.get(urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
         return json.loads(response.text)
@@ -354,7 +361,7 @@ class DemoApi:
 
         :returns: the list of characters that have a number
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.get(urljoin(self.uri,"character"))
         response.raise_for_status()
         return json.loads(response.text)
@@ -363,42 +370,48 @@ class DemoApi:
 and some tests [test_demoapi.py](test_demoapi.py)
 
 ```python
+"""Test module for DemoApi."""
+
 import unittest
 from demoapi import DemoApi
 
-class Test_Api(unittest.TestCase):
+class TestApi(unittest.TestCase):
+    """Test Class"""
 
     def setUp(self):
-        self.demoApi = DemoApi('user', 'password', None, 'http://localhost:5041/')
+        self.demo_api = DemoApi('user', 'password', None, 'http://localhost:5041/')
         # clear all characters (if any)
-        characters = self.demoApi.list()
+        characters = self.demo_api.list()
         for character in characters:
-            self.demoApi.reset(character)
-    
-    # yes i know, only test 1 thing every test...
-    def test_username(self):
-        characters = self.demoApi.list()
+            self.demo_api.reset(character)
+
+    def test_username(self) -> None:
+        """Test module with username/password
+
+        yes i know, only test 1 thing every test...
+        """
+        characters = self.demo_api.list()
         for character in characters:
-            self.demoApi.reset(character)
+            self.demo_api.reset(character)
         # set A and B
-        self.demoApi.set('A', 5)
-        self.demoApi.set('B', 7)
+        self.demo_api.set('A', 5)
+        self.demo_api.set('B', 7)
         # check value of A
-        check = self.demoApi.get('A')
+        check = self.demo_api.get('A')
         assert check == 5
         # check list
-        check = self.demoApi.list()
+        check = self.demo_api.list()
         assert len(check) == 2
         assert 'A' in check
         assert 'B' in check
 
-    # test token
-    def test_token(self):
-        self.demoApi = DemoApi(None, None, 'secret', 'http://localhost:5041/')
+    def test_token(self) -> None:
+        """Test module with token."""
+        self.demo_api = DemoApi(None, None, 'secret', 'http://localhost:5041/')
         # set A and B
-        self.demoApi.set('A', 5)
+        self.demo_api.set('A', 5)
         # check value of A
-        check = self.demoApi.get('A')
+        check = self.demo_api.get('A')
         assert check == 5
 
 if __name__ == '__main_':
@@ -420,13 +433,18 @@ This is the finished module [api_demo.py](ansible-playbook/library/api_demo.py):
 
 ```python
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-import requests
-import json
-import re
-from ansible.module_utils.basic import AnsibleModule
+"""Ansible module that interact with demo api."""
+
+# pylint: disable=line-too-long
+
 from urllib.parse import urljoin
 from typing import List
+import json
+import re
+import requests
+from ansible.module_utils.basic import AnsibleModule
 
 class DemoApi:
     """
@@ -457,7 +475,7 @@ class DemoApi:
 
         :param character: character to reset
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.delete(urljoin(self.uri,f"character/{character}"))
         response.raise_for_status()
 
@@ -469,7 +487,7 @@ class DemoApi:
         :param number: the number that will be given to the character
 
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.put(urljoin(self.uri,f"character/{character}?number={number}"))
         response.raise_for_status()
 
@@ -481,7 +499,7 @@ class DemoApi:
         :param number: the number that will be given to the character
 
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.post(urljoin(self.uri,f"character/{character}?number={number}"))
         response.raise_for_status()
 
@@ -493,7 +511,7 @@ class DemoApi:
 
         :returns: the number that will be given to the character
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.get(urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
         return json.loads(response.text)
@@ -504,7 +522,7 @@ class DemoApi:
 
         :returns: the list of characters that have a number
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.get(urljoin(self.uri,"character"))
         response.raise_for_status()
         return json.loads(response.text)
@@ -597,17 +615,19 @@ number:
     sample: 5
 '''
 
-def run_module():
+def run_module() -> None:
+    """The Ansible module."""
+
     # define the available arguments/parameters that a user can pass to the module
-    module_args = dict(
-        endpoint=dict(type='str', required=True),
-        username=dict(type='str', required=False),
-        password=dict(type='str', required=False, no_log=True),
-        token=dict(type='str', required=False, no_log=True),
-        character=dict(type='str', required=False),
-        number=dict(type='int', required=False),
-        action=dict(type='str', required=True, choices=['get', 'set', 'clear'])
-    )
+    module_args = {
+        'endpoint': {'type': 'str', 'required': True},
+        'username': {'type': 'str', 'required': False},
+        'password': {'type': 'str', 'required': False, 'no_log': True},
+        'token': {'type': 'str', 'required': False, 'no_log': True},
+        'character': {'type': 'str', 'required': False},
+        'number': {'type': 'int', 'required': False},
+        'action': {'type': 'str', 'required': True, 'choices': ['get', 'set', 'clear']}
+    }
 
     # use username with password
     check_required_together = [
@@ -645,12 +665,11 @@ def run_module():
     # change is if this module effectively modified the target
     # state will include any data that you want your module to pass back
     # for consumption, for example, in a subsequent task
-    result = dict(
-        changed=False,
-        rc=1,
-        stdout=None,
-        stderr=None
-    )
+    result = {
+        'changed': False,
+        'rc': 1,
+        'diff': None
+    }
 
     endpoint = module.params['endpoint']
     username = module.params['username']
@@ -661,51 +680,80 @@ def run_module():
     action = module.params['action']
 
     # input checks
-    if character != None and not (re.fullmatch(r"[A-Z]", character)):
+    if character is not None and not re.fullmatch(r"[A-Z]", character):
         module.fail_json(msg=f'character: "{character}" must be an alpha letter and in upper case', **result)
-    if number != None and not (1 <= number <= 255):
+    if number is not None and not 1 <= number <= 255:
         module.fail_json(msg='number must be between 1 and 255', **result)
 
-    demoApi = DemoApi(username, password, token, endpoint)
+    demo_api = DemoApi(username, password, token, endpoint)
 
     # actions
     if action == 'get':
         # only get from API that is in the list
-        characterList = demoApi.list()
-        if (character in characterList):
-            result['number'] = demoApi.get(character)
+        character_list = demo_api.list()
+        if character in character_list:
+            result['number'] = demo_api.get(character)
             result['exists'] = True
         else:
             result['exists'] = False
     elif action == 'set':
-        characterList = demoApi.list()
-        if (character in characterList):
-            currentNumber = demoApi.get(character)
-            if currentNumber != number:
-                result['changed'] = True
-                # if the user is working with this module in only check mode we do not want to make any changes to the environment.
+        character_list = demo_api.list()
+        if character in character_list:
+            current_number = demo_api.get(character)
+            if current_number != number:
+                # if the user is working with this module in only check mode,
+                # we do not want to make any changes to the environment.
                 if not module.check_mode:
-                    demoApi.update(character, number)
+                    demo_api.update(character, number)
+                result['changed'] = True
+                result['diff'] = {  'before': {
+                                        'character': character,
+                                        'number': current_number
+                                    },
+                                    'after': {
+                                        'character': character,
+                                        'number': number
+                                    }
+                }
         else:
-            result['changed'] = True
-            # if the user is working with this module in only check mode we do not want to make any changes to the environment.
+            # if the user is working with this module in only check mode,
+            # we do not want to make any changes to the environment.
             if not module.check_mode:
-                demoApi.set(character, number)
+                demo_api.set(character, number)
+            result['changed'] = True
+            result['diff'] = {  'before': {
+                                    'character': None,
+                                    'number': None
+                                    },
+                                'after': {
+                                    'character': character,
+                                    'number': number
+                                }
+            }
         result['number'] = number
         result['exists'] = True
     elif action == 'clear':
-        characterList = demoApi.list()
-        for characterClear in characterList:
-            # if the user is working with this module in only check mode we do not want to make any changes to the environment.
+        character_list = demo_api.list()
+        for character_clear in character_list:
+            # if the user is working with this module in only check mode
+            # we do not want to make any changes to the environment.
             if not module.check_mode:
-                demoApi.reset(characterClear)
+                demo_api.reset(character_clear)
             result['changed'] = True
             result['exists'] = False
+            result['diff'] = {  'before': {
+                                    'character_list': character_list
+                                },
+                                'after': {
+                                    'character_list': None
+                                }
+            }
 
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
-def main():
+def main() -> None:
+    """Main function to run Ansible Module."""
     run_module()
 
 if __name__ == '__main__':

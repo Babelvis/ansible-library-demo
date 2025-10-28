@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Ansible module that has only documentation."""
+
 # Bas Magré <bas.magre@babelvis.nl>
 # The MIT License (MIT) (see https://opensource.org/license/mit)
 
@@ -101,17 +103,19 @@ number:
     sample: 5
 '''
 
-def run_module():
+def run_module() -> None:
+    """The Ansible module."""
+
     # define the available arguments/parameters that a user can pass to the module
-    module_args = dict(
-        endpoint=dict(type='str', required=True),
-        username=dict(type='str', required=False),
-        password=dict(type='str', required=False, no_log=True),
-        token=dict(type='str', required=False, no_log=True),
-        character=dict(type='str', required=False),
-        number=dict(type='int', required=False),
-        action=dict(type='str', required=True, choices=['get', 'set', 'clear'])
-    )
+    module_args = {
+        'endpoint': {'type': 'str', 'required': True},
+        'username': {'type': 'str', 'required': False},
+        'password': {'type': 'str', 'required': False, 'no_log': True},
+        'token': {'type': 'str', 'required': False, 'no_log': True},
+        'character': {'type': 'str', 'required': False},
+        'number': {'type': 'int', 'required': False},
+        'action': {'type': 'str', 'required': True, 'choices': ['get', 'set', 'clear']}
+    }
 
     # the AnsibleModule object will be our abstraction working with Ansible
     # this includes instantiation, a couple of common attr would be the
@@ -126,17 +130,18 @@ def run_module():
     # change is if this module effectively modified the target
     # state will include any data that you want your module to pass back
     # for consumption, for example, in a subsequent task
-    result = dict(
-        changed=False,
-        rc=1,
-        stdout=None,
-        stderr=None
-    )
+    result = {
+        'changed': False,
+        'rc': 1,
+        'stdout': None,
+        'stderr': None
+    }
 
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
-def main():
+def main() -> None:
+    """Main function to run Ansible Module."""
     run_module()
 
 if __name__ == '__main__':

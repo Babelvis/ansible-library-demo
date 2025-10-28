@@ -1,7 +1,9 @@
-import json
-import requests
+"""Module providing calls to the demo api."""
+
 from typing import List
 from urllib.parse import urljoin
+import json
+import requests
 
 class DemoApi:
     """
@@ -32,7 +34,7 @@ class DemoApi:
 
         :param character: character to reset
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.delete(urljoin(self.uri,f"character/{character}"))
         response.raise_for_status()
 
@@ -44,7 +46,7 @@ class DemoApi:
         :param number: the number that will be given to the character
 
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.put(urljoin(self.uri,f"character/{character}?number={number}"))
         response.raise_for_status()
 
@@ -56,7 +58,7 @@ class DemoApi:
         :param number: the number that will be given to the character
 
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.post(urljoin(self.uri,f"character/{character}?number={number}"))
         response.raise_for_status()
 
@@ -68,7 +70,7 @@ class DemoApi:
 
         :returns: the number that will be given to the character
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.get(urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
         return json.loads(response.text)
@@ -79,7 +81,7 @@ class DemoApi:
 
         :returns: the list of characters that have a number
         :raises HTTPError: if one occurred
-        """ 
+        """
         response = self.session.get(urljoin(self.uri,"character"))
         response.raise_for_status()
         return json.loads(response.text)
