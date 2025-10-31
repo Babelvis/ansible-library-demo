@@ -3,11 +3,13 @@
 import unittest
 from demoapi import DemoApi
 
+
 class TestApi(unittest.TestCase):
     """Test Class"""
 
     def setUp(self):
-        self.demo_api = DemoApi('user', 'password', None, 'http://localhost:5041/')
+        self.demo_api = DemoApi('user', 'password', None,
+                                'http://localhost:5041/')
         # clear all characters (if any)
         characters = self.demo_api.list()
         for character in characters:
@@ -41,6 +43,7 @@ class TestApi(unittest.TestCase):
         # check value of A
         check = self.demo_api.get('A')
         assert check == 5
+
 
 if __name__ == '__main_':
     unittest.main()

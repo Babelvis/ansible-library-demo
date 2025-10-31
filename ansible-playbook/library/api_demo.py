@@ -1,12 +1,7 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 """Ansible module that interact with demo api."""
 
 # Bas Magré <bas.magre@babelvis.nl>
 # The MIT License (MIT) (see https://opensource.org/license/mit)
-
-# pylint: disable=line-too-long
 
 # See documentation:
 # - https://docs.ansible.com/ansible/latest/dev_guide/developing_modules_general.html
@@ -23,6 +18,7 @@ import re
 import requests
 from ansible.module_utils.basic import AnsibleModule
 
+
 class DemoApi:
     """
     A simple demo class where the API logic is written
@@ -33,6 +29,7 @@ class DemoApi:
     :param uri: the endpoint of the API
     :raises HTTPError: if one occurred
     """
+
     def __init__(self, username: str, password: str, token: str, uri: str):
         self.uri = uri
         self.session = requests.session()
@@ -42,18 +39,20 @@ class DemoApi:
         if token:
             self.session.headers.update({'X-Auth-Token': token})
         else:
-            response = self.session.post(urljoin(self.uri,"token"), json={"username": username, "password": password})
+            response = self.session.post(urljoin(self.uri, "token"), json={
+                                         "username": username, "password": password})
             response.raise_for_status()
             self.session.headers.update({'X-Auth-Token': response.text})
 
-    def reset(self, character :str) -> None:
+    def reset(self, character: str) -> None:
         """
         Reset will remove character from the set of characters that are set
 
         :param character: character to reset
         :raises HTTPError: if one occurred
         """
-        response = self.session.delete(urljoin(self.uri,f"character/{character}"))
+        response = self.session.delete(
+            urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
 
     def set(self, character: str, number: int) -> None:
@@ -65,7 +64,8 @@ class DemoApi:
 
         :raises HTTPError: if one occurred
         """
-        response = self.session.put(urljoin(self.uri,f"character/{character}?number={number}"))
+        response = self.session.put(
+            urljoin(self.uri, f"character/{character}?number={number}"))
         response.raise_for_status()
 
     def update(self, character: str, number: int) -> None:
@@ -77,7 +77,8 @@ class DemoApi:
 
         :raises HTTPError: if one occurred
         """
-        response = self.session.post(urljoin(self.uri,f"character/{character}?number={number}"))
+        response = self.session.post(
+            urljoin(self.uri, f"character/{character}?number={number}"))
         response.raise_for_status()
 
     def get(self, character: str) -> int:
@@ -89,7 +90,8 @@ class DemoApi:
         :returns: the number that will be given to the character
         :raises HTTPError: if one occurred
         """
-        response = self.session.get(urljoin(self.uri, f"character/{character}"))
+        response = self.session.get(
+            urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
         return json.loads(response.text)
 
@@ -100,9 +102,10 @@ class DemoApi:
         :returns: the list of characters that have a number
         :raises HTTPError: if one occurred
         """
-        response = self.session.get(urljoin(self.uri,"character"))
+        response = self.session.get(urljoin(self.uri, "character"))
         response.raise_for_status()
         return json.loads(response.text)
+
 
 DOCUMENTATION = r'''
 ---
@@ -192,6 +195,7 @@ number:
     sample: 5
 '''
 
+
 def run_module() -> None:
     """The Ansible module."""
 
@@ -212,16 +216,16 @@ def run_module() -> None:
     ]
 
     # use username/password or token is needed
-    check_required_one_of = [ ('username', 'token')]
+    check_required_one_of = [('username', 'token')]
 
     # use username/password or token, only one
-    check_mutually_exclusive = [ ('username', 'token')]
+    check_mutually_exclusive = [('username', 'token')]
 
     # if action == get, we need the character argument
     # if action == set, we need the character and number arguments
     check_required_if = [
-         ('action', 'get', ['character']),
-         ('action', 'set', ['character','number'])
+        ('action', 'get', ['character']),
+        ('action', 'set', ['character', 'number'])
     ]
 
     # the AnsibleModule object will be our abstraction working with Ansible
@@ -258,7 +262,8 @@ def run_module() -> None:
 
     # input checks
     if character is not None and not re.fullmatch(r"[A-Z]", character):
-        module.fail_json(msg=f'character: "{character}" must be an alpha letter and in upper case', **result)
+        module.fail_json(
+            msg=f'character: "{character}" must be an alpha letter and in upper case', **result)
     if number is not None and not 1 <= number <= 255:
         module.fail_json(msg='number must be between 1 and 255', **result)
 
@@ -283,14 +288,14 @@ def run_module() -> None:
                 if not module.check_mode:
                     demo_api.update(character, number)
                 result['changed'] = True
-                result['diff'] = {  'before': {
-                                        'character': character,
-                                        'number': current_number
-                                    },
-                                    'after': {
-                                        'character': character,
-                                        'number': number
-                                    }
+                result['diff'] = {'before': {
+                    'character': character,
+                    'number': current_number
+                },
+                    'after': {
+                    'character': character,
+                    'number': number
+                }
                 }
         else:
             # if the user is working with this module in only check mode,
@@ -298,14 +303,14 @@ def run_module() -> None:
             if not module.check_mode:
                 demo_api.set(character, number)
             result['changed'] = True
-            result['diff'] = {  'before': {
-                                    'character': None,
-                                    'number': None
-                                    },
-                                'after': {
-                                    'character': character,
-                                    'number': number
-                                }
+            result['diff'] = {'before': {
+                'character': None,
+                'number': None
+            },
+                'after': {
+                'character': character,
+                'number': number
+            }
             }
         result['number'] = number
         result['exists'] = True
@@ -318,20 +323,22 @@ def run_module() -> None:
                 demo_api.reset(character_clear)
             result['changed'] = True
             result['exists'] = False
-            result['diff'] = {  'before': {
-                                    'character_list': character_list
-                                },
-                                'after': {
-                                    'character_list': None
-                                }
+            result['diff'] = {'before': {
+                'character_list': character_list
+            },
+                'after': {
+                'character_list': None
+            }
             }
 
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
+
 def main() -> None:
     """Main function to run Ansible Module."""
     run_module()
+
 
 if __name__ == '__main__':
     main()

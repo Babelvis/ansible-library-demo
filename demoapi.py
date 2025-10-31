@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 import json
 import requests
 
+
 class DemoApi:
     """
     A simple demo class where the API logic is written
@@ -15,6 +16,7 @@ class DemoApi:
     :param uri: the endpoint of the API
     :raises HTTPError: if one occurred
     """
+
     def __init__(self, username: str, password: str, token: str, uri: str):
         self.uri = uri
         self.session = requests.session()
@@ -24,18 +26,20 @@ class DemoApi:
         if token:
             self.session.headers.update({'X-Auth-Token': token})
         else:
-            response = self.session.post(urljoin(self.uri,"token"), json={"username": username, "password": password})
+            response = self.session.post(urljoin(self.uri, "token"), json={
+                                         "username": username, "password": password})
             response.raise_for_status()
             self.session.headers.update({'X-Auth-Token': response.text})
 
-    def reset(self, character :str) -> None:
+    def reset(self, character: str) -> None:
         """
         Reset will remove character from the set of characters that are set
 
         :param character: character to reset
         :raises HTTPError: if one occurred
         """
-        response = self.session.delete(urljoin(self.uri,f"character/{character}"))
+        response = self.session.delete(
+            urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
 
     def set(self, character: str, number: int) -> None:
@@ -47,7 +51,8 @@ class DemoApi:
 
         :raises HTTPError: if one occurred
         """
-        response = self.session.put(urljoin(self.uri,f"character/{character}?number={number}"))
+        response = self.session.put(
+            urljoin(self.uri, f"character/{character}?number={number}"))
         response.raise_for_status()
 
     def update(self, character: str, number: int) -> None:
@@ -59,7 +64,8 @@ class DemoApi:
 
         :raises HTTPError: if one occurred
         """
-        response = self.session.post(urljoin(self.uri,f"character/{character}?number={number}"))
+        response = self.session.post(
+            urljoin(self.uri, f"character/{character}?number={number}"))
         response.raise_for_status()
 
     def get(self, character: str) -> int:
@@ -71,7 +77,8 @@ class DemoApi:
         :returns: the number that will be given to the character
         :raises HTTPError: if one occurred
         """
-        response = self.session.get(urljoin(self.uri, f"character/{character}"))
+        response = self.session.get(
+            urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
         return json.loads(response.text)
 
@@ -82,6 +89,6 @@ class DemoApi:
         :returns: the list of characters that have a number
         :raises HTTPError: if one occurred
         """
-        response = self.session.get(urljoin(self.uri,"character"))
+        response = self.session.get(urljoin(self.uri, "character"))
         response.raise_for_status()
         return json.loads(response.text)

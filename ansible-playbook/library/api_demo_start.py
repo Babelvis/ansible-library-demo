@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 """Ansible module that has input validation."""
 
 # Bas Magré <bas.magre@babelvis.nl>
@@ -104,6 +101,7 @@ number:
     sample: 5
 '''
 
+
 def run_module() -> None:
     """The Ansible module."""
 
@@ -124,16 +122,16 @@ def run_module() -> None:
     ]
 
     # use username/password or token is needed
-    check_required_one_of = [ ('username', 'token')]
+    check_required_one_of = [('username', 'token')]
 
     # use username/password or token, only one
-    check_mutually_exclusive = [ ('username', 'token')]
+    check_mutually_exclusive = [('username', 'token')]
 
     # if action == get, we need the character argument
     # if action == set, we need the character and number arguments
     check_required_if = [
-         ('action', 'get', ['character']),
-         ('action', 'set', ['character','number'])
+        ('action', 'get', ['character']),
+        ('action', 'set', ['character', 'number'])
     ]
 
     # the AnsibleModule object will be our abstraction working with Ansible
@@ -167,7 +165,8 @@ def run_module() -> None:
 
     # input checks
     if character is not None and not re.fullmatch(r"[A-Z]", character):
-        module.fail_json(msg=f'character: "{character}" must be an alpha letter and in upper case', **result)
+        module.fail_json(
+            msg=f'character: "{character}" must be an alpha letter and in upper case', **result)
     if number is not None and not 1 <= number <= 255:
         module.fail_json(msg='number must be between 1 and 255', **result)
 
@@ -186,9 +185,11 @@ def run_module() -> None:
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
+
 def main() -> None:
     """Main function to run Ansible Module."""
     run_module()
+
 
 if __name__ == '__main__':
     main()

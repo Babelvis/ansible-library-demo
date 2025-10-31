@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 """Ansible module that has only documentation."""
 
 # Bas Magré <bas.magre@babelvis.nl>
@@ -103,6 +100,7 @@ number:
     sample: 5
 '''
 
+
 def run_module() -> None:
     """The Ansible module."""
 
@@ -140,9 +138,11 @@ def run_module() -> None:
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
+
 def main() -> None:
     """Main function to run Ansible Module."""
     run_module()
+
 
 if __name__ == '__main__':
     main()

@@ -67,8 +67,6 @@ We use the class AnsibleModule for communication back to Ansible and set the var
 Here is my implementation of [api_demo_start_doc.py](ansible-playbook/library/api_demo_start_doc.py):
 
 ```python
-#!/usr/bin/python
-
 """Ansible module that has only documentation."""
 
 from ansible.module_utils.basic import AnsibleModule
@@ -161,6 +159,7 @@ number:
     sample: 5
 '''
 
+
 def run_module() -> None:
     """The Ansible module."""
 
@@ -198,12 +197,15 @@ def run_module() -> None:
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
+
 def main() -> None:
     """Main function to run Ansible Module."""
     run_module()
 
+
 if __name__ == '__main__':
     main()
+
 ```
 
 Now we can test if the documentation is correct with the commands.
@@ -237,16 +239,16 @@ We can implement this in the module like this [api_demo_start.py](ansible-playbo
     ]
 
     # use username/password or token is needed
-    check_required_one_of = [ ('username', 'token')]
+    check_required_one_of = [('username', 'token')]
 
     # use username/password or token, only one
-    check_mutually_exclusive = [ ('username', 'token')]
+    check_mutually_exclusive = [('username', 'token')]
 
     # if action == get, we need the character argument
     # if action == set, we need the character and number arguments
     check_required_if = [
-         ('action', 'get', ['character']),
-         ('action', 'set', ['character','number'])
+        ('action', 'get', ['character']),
+        ('action', 'set', ['character', 'number'])
     ]
 
     # the AnsibleModule object will be our abstraction working with Ansible
@@ -285,6 +287,7 @@ from urllib.parse import urljoin
 import json
 import requests
 
+
 class DemoApi:
     """
     A simple demo class where the API logic is written
@@ -295,6 +298,7 @@ class DemoApi:
     :param uri: the endpoint of the API
     :raises HTTPError: if one occurred
     """
+
     def __init__(self, username: str, password: str, token: str, uri: str):
         self.uri = uri
         self.session = requests.session()
@@ -304,18 +308,20 @@ class DemoApi:
         if token:
             self.session.headers.update({'X-Auth-Token': token})
         else:
-            response = self.session.post(urljoin(self.uri,"token"), json={"username": username, "password": password})
+            response = self.session.post(urljoin(self.uri, "token"), json={
+                                         "username": username, "password": password})
             response.raise_for_status()
             self.session.headers.update({'X-Auth-Token': response.text})
 
-    def reset(self, character :str) -> None:
+    def reset(self, character: str) -> None:
         """
         Reset will remove character from the set of characters that are set
 
         :param character: character to reset
         :raises HTTPError: if one occurred
         """
-        response = self.session.delete(urljoin(self.uri,f"character/{character}"))
+        response = self.session.delete(
+            urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
 
     def set(self, character: str, number: int) -> None:
@@ -327,7 +333,8 @@ class DemoApi:
 
         :raises HTTPError: if one occurred
         """
-        response = self.session.put(urljoin(self.uri,f"character/{character}?number={number}"))
+        response = self.session.put(
+            urljoin(self.uri, f"character/{character}?number={number}"))
         response.raise_for_status()
 
     def update(self, character: str, number: int) -> None:
@@ -339,7 +346,8 @@ class DemoApi:
 
         :raises HTTPError: if one occurred
         """
-        response = self.session.post(urljoin(self.uri,f"character/{character}?number={number}"))
+        response = self.session.post(
+            urljoin(self.uri, f"character/{character}?number={number}"))
         response.raise_for_status()
 
     def get(self, character: str) -> int:
@@ -351,7 +359,8 @@ class DemoApi:
         :returns: the number that will be given to the character
         :raises HTTPError: if one occurred
         """
-        response = self.session.get(urljoin(self.uri, f"character/{character}"))
+        response = self.session.get(
+            urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
         return json.loads(response.text)
 
@@ -362,9 +371,10 @@ class DemoApi:
         :returns: the list of characters that have a number
         :raises HTTPError: if one occurred
         """
-        response = self.session.get(urljoin(self.uri,"character"))
+        response = self.session.get(urljoin(self.uri, "character"))
         response.raise_for_status()
         return json.loads(response.text)
+
 ```
 
 and some tests [test_demoapi.py](test_demoapi.py)
@@ -375,11 +385,13 @@ and some tests [test_demoapi.py](test_demoapi.py)
 import unittest
 from demoapi import DemoApi
 
+
 class TestApi(unittest.TestCase):
     """Test Class"""
 
     def setUp(self):
-        self.demo_api = DemoApi('user', 'password', None, 'http://localhost:5041/')
+        self.demo_api = DemoApi('user', 'password', None,
+                                'http://localhost:5041/')
         # clear all characters (if any)
         characters = self.demo_api.list()
         for character in characters:
@@ -414,11 +426,14 @@ class TestApi(unittest.TestCase):
         check = self.demo_api.get('A')
         assert check == 5
 
+
 if __name__ == '__main_':
     unittest.main()
+
 ```
 
-You can run the tests with the command 
+You can run the tests with the command:
+
 ```bash
 python -m unittest discover -v -p 'test_*.py'
 ```
@@ -432,12 +447,7 @@ You can use the module to ask if the user is in [check mode](https://docs.ansibl
 This is the finished module [api_demo.py](ansible-playbook/library/api_demo.py):
 
 ```python
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 """Ansible module that interact with demo api."""
-
-# pylint: disable=line-too-long
 
 from urllib.parse import urljoin
 from typing import List
@@ -445,6 +455,7 @@ import json
 import re
 import requests
 from ansible.module_utils.basic import AnsibleModule
+
 
 class DemoApi:
     """
@@ -456,6 +467,7 @@ class DemoApi:
     :param uri: the endpoint of the API
     :raises HTTPError: if one occurred
     """
+
     def __init__(self, username: str, password: str, token: str, uri: str):
         self.uri = uri
         self.session = requests.session()
@@ -465,18 +477,20 @@ class DemoApi:
         if token:
             self.session.headers.update({'X-Auth-Token': token})
         else:
-            response = self.session.post(urljoin(self.uri,"token"), json={"username": username, "password": password})
+            response = self.session.post(urljoin(self.uri, "token"), json={
+                                         "username": username, "password": password})
             response.raise_for_status()
             self.session.headers.update({'X-Auth-Token': response.text})
 
-    def reset(self, character :str) -> None:
+    def reset(self, character: str) -> None:
         """
         Reset will remove character from the set of characters that are set
 
         :param character: character to reset
         :raises HTTPError: if one occurred
         """
-        response = self.session.delete(urljoin(self.uri,f"character/{character}"))
+        response = self.session.delete(
+            urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
 
     def set(self, character: str, number: int) -> None:
@@ -488,7 +502,8 @@ class DemoApi:
 
         :raises HTTPError: if one occurred
         """
-        response = self.session.put(urljoin(self.uri,f"character/{character}?number={number}"))
+        response = self.session.put(
+            urljoin(self.uri, f"character/{character}?number={number}"))
         response.raise_for_status()
 
     def update(self, character: str, number: int) -> None:
@@ -500,7 +515,8 @@ class DemoApi:
 
         :raises HTTPError: if one occurred
         """
-        response = self.session.post(urljoin(self.uri,f"character/{character}?number={number}"))
+        response = self.session.post(
+            urljoin(self.uri, f"character/{character}?number={number}"))
         response.raise_for_status()
 
     def get(self, character: str) -> int:
@@ -512,7 +528,8 @@ class DemoApi:
         :returns: the number that will be given to the character
         :raises HTTPError: if one occurred
         """
-        response = self.session.get(urljoin(self.uri, f"character/{character}"))
+        response = self.session.get(
+            urljoin(self.uri, f"character/{character}"))
         response.raise_for_status()
         return json.loads(response.text)
 
@@ -523,9 +540,10 @@ class DemoApi:
         :returns: the list of characters that have a number
         :raises HTTPError: if one occurred
         """
-        response = self.session.get(urljoin(self.uri,"character"))
+        response = self.session.get(urljoin(self.uri, "character"))
         response.raise_for_status()
         return json.loads(response.text)
+
 
 DOCUMENTATION = r'''
 ---
@@ -615,6 +633,7 @@ number:
     sample: 5
 '''
 
+
 def run_module() -> None:
     """The Ansible module."""
 
@@ -635,16 +654,16 @@ def run_module() -> None:
     ]
 
     # use username/password or token is needed
-    check_required_one_of = [ ('username', 'token')]
+    check_required_one_of = [('username', 'token')]
 
     # use username/password or token, only one
-    check_mutually_exclusive = [ ('username', 'token')]
+    check_mutually_exclusive = [('username', 'token')]
 
     # if action == get, we need the character argument
     # if action == set, we need the character and number arguments
     check_required_if = [
-         ('action', 'get', ['character']),
-         ('action', 'set', ['character','number'])
+        ('action', 'get', ['character']),
+        ('action', 'set', ['character', 'number'])
     ]
 
     # the AnsibleModule object will be our abstraction working with Ansible
@@ -681,7 +700,8 @@ def run_module() -> None:
 
     # input checks
     if character is not None and not re.fullmatch(r"[A-Z]", character):
-        module.fail_json(msg=f'character: "{character}" must be an alpha letter and in upper case', **result)
+        module.fail_json(
+            msg=f'character: "{character}" must be an alpha letter and in upper case', **result)
     if number is not None and not 1 <= number <= 255:
         module.fail_json(msg='number must be between 1 and 255', **result)
 
@@ -706,14 +726,14 @@ def run_module() -> None:
                 if not module.check_mode:
                     demo_api.update(character, number)
                 result['changed'] = True
-                result['diff'] = {  'before': {
-                                        'character': character,
-                                        'number': current_number
-                                    },
-                                    'after': {
-                                        'character': character,
-                                        'number': number
-                                    }
+                result['diff'] = {'before': {
+                    'character': character,
+                    'number': current_number
+                },
+                    'after': {
+                    'character': character,
+                    'number': number
+                }
                 }
         else:
             # if the user is working with this module in only check mode,
@@ -721,14 +741,14 @@ def run_module() -> None:
             if not module.check_mode:
                 demo_api.set(character, number)
             result['changed'] = True
-            result['diff'] = {  'before': {
-                                    'character': None,
-                                    'number': None
-                                    },
-                                'after': {
-                                    'character': character,
-                                    'number': number
-                                }
+            result['diff'] = {'before': {
+                'character': None,
+                'number': None
+            },
+                'after': {
+                'character': character,
+                'number': number
+            }
             }
         result['number'] = number
         result['exists'] = True
@@ -741,23 +761,26 @@ def run_module() -> None:
                 demo_api.reset(character_clear)
             result['changed'] = True
             result['exists'] = False
-            result['diff'] = {  'before': {
-                                    'character_list': character_list
-                                },
-                                'after': {
-                                    'character_list': None
-                                }
+            result['diff'] = {'before': {
+                'character_list': character_list
+            },
+                'after': {
+                'character_list': None
+            }
             }
 
     result['rc'] = 0  # we are at the end, no errors occurred
     module.exit_json(**result)
 
+
 def main() -> None:
     """Main function to run Ansible Module."""
     run_module()
 
+
 if __name__ == '__main__':
     main()
+
 ```
 
 ## Ansible Playbook
@@ -816,7 +839,7 @@ pip install ansible-core requests ansible-dev-tools
 
 ### Debug modules in vscode
 
-In vscode, install the extension `Ansible` from `Red hat`. This can help you a lot.
+In vscode, install the extension `Ansible` from `Red hat` and `autopep8`, `Pylance`, `Pylint` and `Python Debugger` from `Microsoft`. This can help you a lot.
 
 For debugging the modules in vscode create file `.vscode/launch.json`. Here you can specify launch options.
 
